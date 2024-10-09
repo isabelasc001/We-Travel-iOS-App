@@ -57,9 +57,9 @@ class CardsContentTableViewCell: UITableViewCell {
     }
     
     @IBAction func expandContentButton(_ sender: Any) {
-//        let storyboard = UIStoryboard(name: "Main", bundle: nil)
-//        let cardsContentObject = storyboard.instantiateViewController(withIdentifier: "PostDetailsViewController")
-//        navigationcon
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        let cardsContentObject = storyboard.instantiateViewController(withIdentifier: "PostDetailsViewController")
+        
         
     }
     

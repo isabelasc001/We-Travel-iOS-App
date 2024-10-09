@@ -17,11 +17,10 @@ struct Post {
     let userId: String
 }
 
-class HomeViewController: UIViewController, UISearchBarDelegate {
-    
-    let db = Firestore.firestore()
+class HomeViewController: UIViewController {
     
     var posts: [Post] = []
+    var filteredPosts: [Post] = []
     
     @IBOutlet weak var HomeSearchBar: UISearchBar!
     
@@ -33,10 +32,12 @@ class HomeViewController: UIViewController, UISearchBarDelegate {
         super.viewDidLoad()
         homeTableView.delegate = self
         homeTableView.dataSource = self
+        HomeSearchBar.delegate = self
         userLoggedIn()
         fetchPostsDataFirestore()
         
         homeTableView.register(UINib(nibName: "CardsContentTableViewCell", bundle: nil), forCellReuseIdentifier: "CardsContentCell")
+        NotificationCenter.default.addObserver(self, selector: #selector (handleNewPostNotifications), name: NSNotification.Name("newPostAdded"), object: nil)
         
     }
     
@@ -47,47 +48,127 @@ class HomeViewController: UIViewController, UISearchBarDelegate {
     }
     
     func fetchPostsDataFirestore() {
+        let db = Firestore.firestore()
+        
         db.collection("posts").getDocuments { snapshot, error in
             if let error = error {
                 print("erro ao buscar postagens: \(error.localizedDescription)")
             } else {
-                self.posts = snapshot?.documents.compactMap { document -> Post? in
-                    let data = document.data()
-                    return Post(
-                        title: data["title"] as? String ?? "",
-                        description: data["description"] as? String ?? "",
-                        tags: data["tags"] as? [String] ?? [],
-                        postedBy: data["postedBy"] as? String ?? "Desconhecido",
-                        userId: data["userId"] as? String ?? "Não foi possível reaver o ID do usuário"
-                    )
-                } ?? []
-                self.homeTableView.reloadData()
+                if self.filteredPosts.isEmpty {
+                    self.posts = snapshot?.documents.compactMap { document -> Post? in
+                        let data = document.data()
+                        return Post(
+                            title: data["title"] as? String ?? "",
+                            description: data["description"] as? String ?? "",
+                            tags: data["tags"] as? [String] ?? [],
+                            postedBy: data["postedBy"] as? String ?? "Usuário não informado",
+                            userId: data["userId"] as? String ?? "Não foi possível reaver o ID do usuário"
+                        )
+                    } ?? []
+                    DispatchQueue.main.async {
+                        self.homeTableView.reloadData()
+                    }
+                    
+                } else {
+                    self.filteredPosts = snapshot?.documents.compactMap { document -> Post? in
+                        let data = document.data()
+                        return Post(
+                            title: data["title"] as? String ?? "",
+                            description: data["description"] as? String ?? "",
+                            tags: data["tags"] as? [String] ?? [],
+                            postedBy: data["postedBy"] as? String ?? "Usuário não informado",
+                            userId: data["userId"] as? String ?? "Não foi possível reaver o ID do usuário"
+                        )
+                    } ?? []
+                    DispatchQueue.main.async {
+                        self.homeTableView.reloadData()
+                    }
+                }
             }
         }
+    }
+    
+        @objc func handleNewPostNotifications() {
+        fetchPostsDataFirestore()
     }
 }
 extension HomeViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-            let selectedPost = posts[indexPath.row]
-            
+//            let selectedPost = posts[indexPath.row]
         }
-
+    
 }
 
 extension HomeViewController: UITableViewDataSource {
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return posts.count
+        if filteredPosts.isEmpty {
+            return posts.count
+        } else {
+            return filteredPosts.count
+        }
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = homeTableView.dequeueReusableCell(withIdentifier: "CardsContentCell", for: indexPath) as? CardsContentTableViewCell else {
             return UITableViewCell()
         }
-        let post = posts[indexPath.row]
-        cell.configureCell(with: post)
-        return cell
+//        let post = posts[indexPath.row]
+//        cell.configureCell(with: post)
+//        return cell
+        
+        if filteredPosts.isEmpty {
+            let post = posts[indexPath.row]
+            cell.configureCell(with: post)
+            return cell
+        } else {
+            let post = filteredPosts[indexPath.row]
+            cell.configureCell(with: post)
+            return cell
+        }
     }
-
-
 }
+
+extension HomeViewController: UISearchBarDelegate {
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        
+        if searchText.isEmpty {
+            filteredPosts = posts
+        } else {
+            
+            let delimiters = [", ", " ", " ,", " , ", ","]
+            
+            var keywords = [searchText]
+            for delimiter in delimiters {
+                keywords = keywords.flatMap { $0.components(separatedBy: delimiter)}
+            }
+            
+            keywords = keywords.map { $0.trimmingCharacters(in: .whitespacesAndNewlines)}.filter { !$0.isEmpty}
+            
+            filteredPosts = posts.filter { post in
+                let lowercasedTags = post.tags.map { $0.lowercased()}
+                return keywords.allSatisfy { keyword in
+                    lowercasedTags.contains { tag in
+                        tag.contains(keyword.lowercased())
+                    }
+                }
+            }
+        }
+        DispatchQueue.main.async {
+            self.homeTableView.reloadData()
+        }
+    }
+    
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        searchBar.text = ""
+        filteredPosts = posts
+        homeTableView.reloadData()
+        HomeSearchBar.resignFirstResponder()
+    }
+    
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        HomeSearchBar.resignFirstResponder()
+    }
+}
+
+

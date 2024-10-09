@@ -11,7 +11,7 @@ import FirebaseFirestore
 
 class NewPostViewController: UIViewController {
     
-    let db = Firestore.firestore()
+    
     
     @IBOutlet weak var postTitleLabel: UILabel!
     
@@ -27,16 +27,60 @@ class NewPostViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        styleFields()
 }
     
+    func clearTextFields() {
+        postTitleTextField.text = ""
+        postDescriptionTextView.text = ""
+        filterTagsTextField.text = ""
+    }
+    
+    func styleFields() {
+        postTitleTextField.layer.cornerRadius = 10
+        postTitleTextField.layer.shadowColor = UIColor.black.cgColor
+        postTitleTextField.layer.shadowOpacity = 0.2
+        postTitleTextField.layer.shadowOffset = CGSize(width: 0, height: 2)
+        postTitleTextField.layer.shadowRadius = 4
+        postTitleTextField.backgroundColor = .white
+        postTitleTextField.layer.borderColor = UIColor.orange.cgColor
+        postTitleTextField.layer.borderWidth = 1
+        
+        postDescriptionTextView.layer.cornerRadius = 10
+        postDescriptionTextView.layer.shadowColor = UIColor.black.cgColor
+        postDescriptionTextView.layer.shadowOpacity = 0.2
+        postDescriptionTextView.layer.shadowOffset = CGSize(width: 0, height: 2)
+        postDescriptionTextView.layer.shadowRadius = 4
+        postDescriptionTextView.backgroundColor = .white
+        postDescriptionTextView.layer.borderColor = UIColor.orange.cgColor
+        postDescriptionTextView.layer.borderWidth = 1
+        
+        filterTagsTextField.layer.cornerRadius = 10
+        filterTagsTextField.layer.shadowColor = UIColor.black.cgColor
+        filterTagsTextField.layer.shadowOpacity = 0.2
+        filterTagsTextField.layer.shadowOffset = CGSize(width: 0, height: 2)
+        filterTagsTextField.layer.shadowRadius = 4
+        filterTagsTextField.backgroundColor = .white
+        filterTagsTextField.layer.borderColor = UIColor.orange.cgColor
+        filterTagsTextField.layer.borderWidth = 1
+        
+    }
+    
     @IBAction func cancelPostButtonPressed(_ sender: Any) {
+        
+        clearTextFields()
+        
         if let tabBarController = self.tabBarController {
             tabBarController.selectedIndex = 0
+           
         }
         print("usuário cancelou a postagem")
     }
     
     @IBAction func PostContentButtonPressed(_ sender: Any) {
+        
+        let db = Firestore.firestore()
+        
         guard let currentUser = Auth.auth().currentUser else { return }
         
         let postTitle = postTitleTextField.text ?? "sem título"
@@ -59,10 +103,12 @@ class NewPostViewController: UIViewController {
                 print("erro ao salvar conteúdo da postagem: \(error.localizedDescription) ")
             } else {
                 print("postagem salva com sucesso")
+                self.clearTextFields()
+                NotificationCenter.default.post(name: NSNotification.Name("newPostAdded"), object: nil)
                 
                 if let tabBarController = self.tabBarController {
                     tabBarController.selectedIndex = 0
-                    //COMO APAGAR O CONTEUDO DOS CAMPOS QUANDO A POSTAGEM É REALIZADA?
+                    
                 }
             }
         }
