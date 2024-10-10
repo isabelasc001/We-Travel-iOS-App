@@ -8,6 +8,8 @@
 import UIKit
 
 class CardsContentTableViewCell: UITableViewCell {
+    
+    let detailsVC = PostDetailsViewController()
 
     @IBOutlet weak var postTitleLabel: UILabel!
     
@@ -44,21 +46,20 @@ class CardsContentTableViewCell: UITableViewCell {
         cardsContentTableViewCell.backgroundColor = .white
         cardsContentTableViewCell.layer.borderColor = UIColor.orange.cgColor
         cardsContentTableViewCell.layer.borderWidth = 1
-        
-        //tamanho do card
-//        cardsContentTableViewCell.constraints.
-
        }
     
     override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
 
-        // Configure the view for the selected state
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        let cardsContentObject = storyboard.instantiateViewController(withIdentifier: "PostDetailsViewController")
+        detailsVC.navigationController?.setViewControllers([cardsContentObject], animated: true)
     }
     
     @IBAction func expandContentButton(_ sender: Any) {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         let cardsContentObject = storyboard.instantiateViewController(withIdentifier: "PostDetailsViewController")
+        detailsVC.navigationController?.setViewControllers([cardsContentObject], animated: true)
         
         
     }

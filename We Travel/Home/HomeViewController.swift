@@ -113,9 +113,6 @@ extension HomeViewController: UITableViewDataSource {
         guard let cell = homeTableView.dequeueReusableCell(withIdentifier: "CardsContentCell", for: indexPath) as? CardsContentTableViewCell else {
             return UITableViewCell()
         }
-//        let post = posts[indexPath.row]
-//        cell.configureCell(with: post)
-//        return cell
         
         if filteredPosts.isEmpty {
             let post = posts[indexPath.row]
