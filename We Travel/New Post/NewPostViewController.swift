@@ -90,7 +90,7 @@ class NewPostViewController: UIViewController {
         
         let tags = filterTags.components(separatedBy: ",").map {$0.trimmingCharacters(in: .whitespaces)}
         
-        let post: [String:Any] = [
+        let post: [String : Any] = [
             "title": postTitle,
             "description": postDescription,
             "tags": tags,

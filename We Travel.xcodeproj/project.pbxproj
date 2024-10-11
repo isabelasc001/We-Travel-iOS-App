@@ -24,6 +24,8 @@
 		8C3805C82C80BAB700C6C3B5 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 8C3805C72C80BAB700C6C3B5 /* Alamofire */; };
 		8C3805CB2C80BCC500C6C3B5 /* MessageKit in Frameworks */ = {isa = PBXBuildFile; productRef = 8C3805CA2C80BCC500C6C3B5 /* MessageKit */; };
 		8C4D29062C813130004951DC /* LoginViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C4D29052C813130004951DC /* LoginViewController.swift */; };
+		8C5C58E82CB8AE97004F582D /* PostCommentsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C5C58E62CB8AE97004F582D /* PostCommentsTableViewCell.swift */; };
+		8C5C58E92CB8AE97004F582D /* PostCommentsTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 8C5C58E72CB8AE97004F582D /* PostCommentsTableViewCell.xib */; };
 		8C6ECC942C87E9DD00D82AF0 /* HomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C6ECC932C87E9DD00D82AF0 /* HomeViewController.swift */; };
 		8C73AE712CA63C35002D4C90 /* PostDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C73AE702CA63C35002D4C90 /* PostDetailsViewController.swift */; };
 		8C7B8F6D2C89EB7000192474 /* ConfigurationsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C7B8F6C2C89EB7000192474 /* ConfigurationsViewController.swift */; };
@@ -48,6 +50,8 @@
 		8C36DE592CA4958A0051A78A /* ChatTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatTableViewCell.swift; sourceTree = "<group>"; };
 		8C36DE5A2CA4958A0051A78A /* ChatTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ChatTableViewCell.xib; sourceTree = "<group>"; };
 		8C4D29052C813130004951DC /* LoginViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewController.swift; sourceTree = "<group>"; };
+		8C5C58E62CB8AE97004F582D /* PostCommentsTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostCommentsTableViewCell.swift; sourceTree = "<group>"; };
+		8C5C58E72CB8AE97004F582D /* PostCommentsTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = PostCommentsTableViewCell.xib; sourceTree = "<group>"; };
 		8C6ECC932C87E9DD00D82AF0 /* HomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewController.swift; sourceTree = "<group>"; };
 		8C73AE702CA63C35002D4C90 /* PostDetailsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostDetailsViewController.swift; sourceTree = "<group>"; };
 		8C7B8F6C2C89EB7000192474 /* ConfigurationsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigurationsViewController.swift; sourceTree = "<group>"; };
@@ -116,6 +120,8 @@
 				8C73AE702CA63C35002D4C90 /* PostDetailsViewController.swift */,
 				8C986D2F2C91E55A009E5192 /* CardsContentTableViewCell.swift */,
 				8C986D302C91E55A009E5192 /* CardsContentTableViewCell.xib */,
+				8C5C58E62CB8AE97004F582D /* PostCommentsTableViewCell.swift */,
+				8C5C58E72CB8AE97004F582D /* PostCommentsTableViewCell.xib */,
 			);
 			path = Home;
 			sourceTree = "<group>";
@@ -271,6 +277,7 @@
 				8C8B70912C7E888300369B47 /* LaunchScreen.storyboard in Resources */,
 				8C7B8F722C8A5CF400192474 /* GoogleService-Info.plist in Resources */,
 				8C8B708E2C7E888300369B47 /* Assets.xcassets in Resources */,
+				8C5C58E92CB8AE97004F582D /* PostCommentsTableViewCell.xib in Resources */,
 				8C36DE5C2CA4958A0051A78A /* ChatTableViewCell.xib in Resources */,
 				8C8B708C2C7E887E00369B47 /* Main.storyboard in Resources */,
 			);
@@ -297,6 +304,7 @@
 				8C36DE5B2CA4958A0051A78A /* ChatTableViewCell.swift in Sources */,
 				8C8B70852C7E887E00369B47 /* AppDelegate.swift in Sources */,
 				8C8B70872C7E887E00369B47 /* SceneDelegate.swift in Sources */,
+				8C5C58E82CB8AE97004F582D /* PostCommentsTableViewCell.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
