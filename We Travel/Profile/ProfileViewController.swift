@@ -33,6 +33,8 @@ class ProfileViewController: UIViewController {
         profileImage.layer.borderColor = UIColor.orange.cgColor
         
         loadCurrentUserData()
+        
+        NotificationCenter.default.addObserver(self, selector: #selector (handleContentUpdate), name: NSNotification.Name("userDetailsUpdated"), object: nil)
     }
     
     func loadProfileImage(from url: URL) {
@@ -43,6 +45,10 @@ class ProfileViewController: UIViewController {
                 }
             }
         }
+    }
+    
+    @objc func handleContentUpdate() {
+        loadCurrentUserData()
     }
     
     func loadCurrentUserData() {
@@ -56,6 +62,24 @@ class ProfileViewController: UIViewController {
             loadProfileImage(from: photoURL)
         } else {
             print("Não foi possivel carregar a imagem")
+        }
+        
+        
+        let db = Firestore.firestore()
+        let userId = user.uid
+        let userDocument = db.collection("userDetails").document(userId)
+        
+        userDocument.getDocument { (document, error) in
+            if let document, document.exists {
+                let data = document.data()
+                self.aboutMeTextView.text = data?["description"] as? String ?? "Usuário sem detalhes"
+                self.userNationalityTextField.text = data?["nationality"] as? String ?? "Usuário sem nacionalidade"
+                self.languagesTextField.text = data?["languages"] as? String ?? "Usuário sem idiomas específicos"
+                self.residencyTextField.text = data?["residency"] as? String ?? "Usuário sem país de residência"
+            } else {
+                print("Dados não encontrados \(error?.localizedDescription ?? "Erro inesperado")")
+            }
+            
         }
     }
 }

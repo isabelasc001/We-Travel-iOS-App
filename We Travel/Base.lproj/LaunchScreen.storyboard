@@ -11,7 +11,7 @@
         <scene sceneID="EHf-IW-A2E">
             <objects>
                 <viewController keyboardType="off" id="01J-lp-oVM" sceneMemberID="viewController">
-                    <imageView key="view" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="background" id="8yf-mM-feW">
+                    <imageView key="view" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="launchscreen" id="8yf-mM-feW">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <preferredSymbolConfiguration key="preferredSymbolConfiguration" scale="small"/>
@@ -26,6 +26,6 @@
         </scene>
     </scenes>
     <resources>
-        <image name="background" width="1504" height="1004"/>
+        <image name="launchscreen" width="143" height="310.5"/>
     </resources>
 </document>

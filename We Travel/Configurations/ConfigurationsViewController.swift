@@ -13,11 +13,17 @@ class ConfigurationsViewController: UIViewController {
     
     @IBOutlet weak var greetinsLabel: UILabel!
     
+    @IBOutlet weak var appVersionLabel: UILabel!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         greetinsLabel.text = "Olá, \(Auth.auth().currentUser?.displayName ?? "usuário")"
+        
+        if let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String {
+            appVersionLabel.text = version
+        }
+
     }
     
     

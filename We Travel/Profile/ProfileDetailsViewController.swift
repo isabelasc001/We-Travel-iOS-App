@@ -21,12 +21,17 @@ class ProfileDetailsViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        // Do any additional setup after loading the view.
     }
     
-
+    func emptyFields() {
+        aboutMeTextView.text = ""
+        AddNationalityTextField.text = ""
+        spokenLanguagesTextField.text = ""
+        residencyCountryTextField.text = ""
+    }
+    
     @IBAction func cancelOperationButtonPressed(_ sender: Any) {
+        self.dismiss(animated: true,completion: nil)
     }
     
     @IBAction func saveDetailsButtonPressed(_ sender: Any) {
@@ -50,25 +55,20 @@ class ProfileDetailsViewController: UIViewController {
         
         let userDocument = db.collection("userDetails").document(userId)
         
-        userDocument.setData(userDetails, merge: true) { error in
-            if let error = error {
-                print(error.localizedDescription)
-            } else {
-                print("dados atualizados com sucesso")
+        if aboutMe.isEmpty || userNationality.isEmpty || spokenLanguages.isEmpty || residencyCountry.isEmpty {
+            self.dismiss(animated: true, completion: nil)
+            print("Campos vazios o conteúdo não será atualizado")
+        } else {
+            userDocument.setData(userDetails, merge: false) { error in
+                if let error = error {
+                    print(error.localizedDescription)
+                } else {
+                    self.dismiss(animated: true, completion: nil)
+                    self.emptyFields()
+                    print("dados atualizados com sucesso")
+                    NotificationCenter.default.post(name: NSNotification.Name("userDetailsUpdated"), object: nil)
+                }
             }
         }
-        
-        
-        
     }
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
-    }
-    */
-
 }
