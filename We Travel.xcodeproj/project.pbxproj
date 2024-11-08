@@ -11,6 +11,8 @@
 		8C0F00FF2C908A7F0017C99E /* DatabaseViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C0F00FE2C908A7F0017C99E /* DatabaseViewController.swift */; };
 		8C0F01022C908E970017C99E /* UserDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C0F01002C908E970017C99E /* UserDetailsViewController.swift */; };
 		8C0F01032C908E970017C99E /* UserDetailsViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 8C0F01012C908E970017C99E /* UserDetailsViewController.xib */; };
+		8C1085B22CC0A9720047C635 /* MyPostsCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C1085B02CC0A9720047C635 /* MyPostsCollectionViewCell.swift */; };
+		8C1085B32CC0A9720047C635 /* MyPostsCollectionViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 8C1085B12CC0A9720047C635 /* MyPostsCollectionViewCell.xib */; };
 		8C1BD4BB2CB80D3200BBD67A /* ProfileDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C1BD4BA2CB80D3200BBD67A /* ProfileDetailsViewController.swift */; };
 		8C36DE582CA495660051A78A /* MessagesTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C36DE572CA495660051A78A /* MessagesTableViewController.swift */; };
 		8C36DE5B2CA4958A0051A78A /* ChatTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C36DE592CA4958A0051A78A /* ChatTableViewCell.swift */; };
@@ -45,6 +47,8 @@
 		8C0F00FE2C908A7F0017C99E /* DatabaseViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseViewController.swift; sourceTree = "<group>"; };
 		8C0F01002C908E970017C99E /* UserDetailsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDetailsViewController.swift; sourceTree = "<group>"; };
 		8C0F01012C908E970017C99E /* UserDetailsViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = UserDetailsViewController.xib; sourceTree = "<group>"; };
+		8C1085B02CC0A9720047C635 /* MyPostsCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyPostsCollectionViewCell.swift; sourceTree = "<group>"; };
+		8C1085B12CC0A9720047C635 /* MyPostsCollectionViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MyPostsCollectionViewCell.xib; sourceTree = "<group>"; };
 		8C1BD4BA2CB80D3200BBD67A /* ProfileDetailsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileDetailsViewController.swift; sourceTree = "<group>"; };
 		8C36DE572CA495660051A78A /* MessagesTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagesTableViewController.swift; sourceTree = "<group>"; };
 		8C36DE592CA4958A0051A78A /* ChatTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatTableViewCell.swift; sourceTree = "<group>"; };
@@ -139,6 +143,8 @@
 			children = (
 				8C0574AB2C9277870055357B /* ProfileViewController.swift */,
 				8C1BD4BA2CB80D3200BBD67A /* ProfileDetailsViewController.swift */,
+				8C1085B02CC0A9720047C635 /* MyPostsCollectionViewCell.swift */,
+				8C1085B12CC0A9720047C635 /* MyPostsCollectionViewCell.xib */,
 			);
 			path = Profile;
 			sourceTree = "<group>";
@@ -279,6 +285,7 @@
 				8C8B708E2C7E888300369B47 /* Assets.xcassets in Resources */,
 				8C5C58E92CB8AE97004F582D /* PostCommentsTableViewCell.xib in Resources */,
 				8C36DE5C2CA4958A0051A78A /* ChatTableViewCell.xib in Resources */,
+				8C1085B32CC0A9720047C635 /* MyPostsCollectionViewCell.xib in Resources */,
 				8C8B708C2C7E887E00369B47 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -290,6 +297,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8C1085B22CC0A9720047C635 /* MyPostsCollectionViewCell.swift in Sources */,
 				8C0F01022C908E970017C99E /* UserDetailsViewController.swift in Sources */,
 				8C986D312C91E55A009E5192 /* CardsContentTableViewCell.swift in Sources */,
 				8C0574AC2C9277870055357B /* ProfileViewController.swift in Sources */,

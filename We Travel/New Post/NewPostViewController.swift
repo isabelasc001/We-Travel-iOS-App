@@ -11,8 +11,6 @@ import FirebaseFirestore
 
 class NewPostViewController: UIViewController {
     
-    
-    
     @IBOutlet weak var postTitleLabel: UILabel!
     
     @IBOutlet weak var postTitleTextField: UITextField!
@@ -72,7 +70,6 @@ class NewPostViewController: UIViewController {
         
         if let tabBarController = self.tabBarController {
             tabBarController.selectedIndex = 0
-           
         }
         print("usuário cancelou a postagem")
     }
@@ -98,17 +95,26 @@ class NewPostViewController: UIViewController {
             "userId": currentUser.uid
         ]
         
-        db.collection("posts").addDocument(data: post) {error in
+        var postRef: DocumentReference? = nil
+        postRef = db.collection("posts").addDocument(data: post) {error in
             if let error = error {
                 print("erro ao salvar conteúdo da postagem: \(error.localizedDescription) ")
             } else {
                 print("postagem salva com sucesso")
+                if let documentId = postRef?.documentID {
+                        postRef?.updateData(["postId": documentId]) { error in
+                            if let error = error {
+                                print("Erro ao atualizar postId: \(error.localizedDescription)")
+                            } else {
+                                print("postId atualizado com sucesso")
+                            }
+                        }
+                    }
                 self.clearTextFields()
                 NotificationCenter.default.post(name: NSNotification.Name("newPostAdded"), object: nil)
                 
                 if let tabBarController = self.tabBarController {
                     tabBarController.selectedIndex = 0
-                    
                 }
             }
         }

@@ -6,11 +6,13 @@
 //
 
 import UIKit
+import FirebaseAuth
 
 class CardsContentTableViewCell: UITableViewCell {
     
-    let detailsVC = PostDetailsViewController()
-
+    var onSeeMoreButton: (() -> Void)?
+    var post: Post?
+    
     @IBOutlet weak var postTitleLabel: UILabel!
     
     @IBOutlet weak var postContentTextView: UITextView!
@@ -23,18 +25,30 @@ class CardsContentTableViewCell: UITableViewCell {
     
     @IBOutlet weak var cardsContentTableViewCell: UIView!
     
+    @IBOutlet weak var seeMoreButton: UIButton!
+    
+    @IBOutlet weak var deletePostButton: UIButton!
+    
     override func awakeFromNib() {
         super.awakeFromNib()
         setupStyle()
     }
-    
-    func configureCell(with post: Post) {
+
+    func configureCell(with post: Post, onSeeMore: @escaping () -> Void) {
             postTitleLabel.text = post.title
             postContentTextView.text = post.description
             tagsTextField.text = post.tags.joined(separator: ", ")
             postedByLabel.text = "Postado por \(post.postedBy)"
+            self.onSeeMoreButton = onSeeMore
+        
+            guard let currentUser = Auth.auth().currentUser else { return }
+            
+                if post.userId == currentUser.uid {
+                    deletePostButton.isHidden = false
+                } else {
+                    deletePostButton.isHidden = true
+                }
         }
-
     
     private func setupStyle() {
         cardsContentTableViewCell.layer.cornerRadius = 10
@@ -48,20 +62,12 @@ class CardsContentTableViewCell: UITableViewCell {
         cardsContentTableViewCell.layer.borderWidth = 1
        }
     
-    override func setSelected(_ selected: Bool, animated: Bool) {
-        super.setSelected(selected, animated: animated)
-
-        let storyboard = UIStoryboard(name: "Main", bundle: nil)
-        let cardsContentObject = storyboard.instantiateViewController(withIdentifier: "PostDetailsViewController")
-        detailsVC.navigationController?.setViewControllers([cardsContentObject], animated: true)
-    }
+//    override func setSelected(_ selected: Bool, animated: Bool) {
+//        super.setSelected(selected, animated: animated)
+//    }
     
     @IBAction func expandContentButton(_ sender: Any) {
-        let storyboard = UIStoryboard(name: "Main", bundle: nil)
-        let cardsContentObject = storyboard.instantiateViewController(withIdentifier: "PostDetailsViewController")
-        detailsVC.navigationController?.setViewControllers([cardsContentObject], animated: true)
-        
-        
+        onSeeMoreButton?()
     }
     
   

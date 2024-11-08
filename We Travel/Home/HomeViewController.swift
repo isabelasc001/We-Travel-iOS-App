@@ -15,6 +15,7 @@ struct Post {
     let tags: [String]
     let postedBy: String
     let userId: String
+    let postId: String
 }
 
 class HomeViewController: UIViewController {
@@ -38,12 +39,20 @@ class HomeViewController: UIViewController {
         
         homeTableView.register(UINib(nibName: "CardsContentTableViewCell", bundle: nil), forCellReuseIdentifier: "CardsContentCell")
         NotificationCenter.default.addObserver(self, selector: #selector (handleNewPostNotifications), name: NSNotification.Name("newPostAdded"), object: nil)
-        
     }
     
     func userLoggedIn() {
         if let user = userAuth {
             print("Usuário logado: \(user.displayName ?? "Sem nome")")
+        }
+    }
+    
+    func navigateToPostDetails(for post: Post) {
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        if let postDetailsNavController = storyboard.instantiateViewController(withIdentifier: "PostDetailsNavigationController") as? UINavigationController,
+           let postDetailsVC = postDetailsNavController.viewControllers.first as? PostDetailsViewController {
+            postDetailsVC.post = post
+            self.present(postDetailsNavController, animated: true, completion: nil)
         }
     }
     
@@ -62,7 +71,8 @@ class HomeViewController: UIViewController {
                             description: data["description"] as? String ?? "",
                             tags: data["tags"] as? [String] ?? [],
                             postedBy: data["postedBy"] as? String ?? "Usuário não informado",
-                            userId: data["userId"] as? String ?? "Não foi possível reaver o ID do usuário"
+                            userId: data["userId"] as? String ?? "Não foi possível reaver o ID do usuário",
+                            postId: document.documentID
                         )
                     } ?? []
                     DispatchQueue.main.async {
@@ -77,26 +87,35 @@ class HomeViewController: UIViewController {
                             description: data["description"] as? String ?? "",
                             tags: data["tags"] as? [String] ?? [],
                             postedBy: data["postedBy"] as? String ?? "Usuário não informado",
-                            userId: data["userId"] as? String ?? "Não foi possível reaver o ID do usuário"
+                            userId: data["userId"] as? String ?? "Não foi possível reaver o ID do usuário",
+                            postId: document.documentID
                         )
                     } ?? []
                     DispatchQueue.main.async {
-                        self.homeTableView.reloadData()
+                         self.homeTableView.reloadData()
                     }
                 }
             }
         }
     }
-    
         @objc func handleNewPostNotifications() {
         fetchPostsDataFirestore()
     }
 }
 extension HomeViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-//            let selectedPost = posts[indexPath.row]
+        let selectedPost = filteredPosts.isEmpty ? posts[indexPath.row] : filteredPosts[indexPath.row]
+            navigateToPostDetails(for: selectedPost)
         }
     
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        
+        let spacing = CGFloat(3)
+        
+        cell.contentView.frame = cell.contentView.frame.inset(by: UIEdgeInsets(top: 3, left: spacing, bottom: 3, right: spacing))
+        
+        homeTableView.separatorStyle = .none
+    }
 }
 
 extension HomeViewController: UITableViewDataSource {
@@ -116,11 +135,17 @@ extension HomeViewController: UITableViewDataSource {
         
         if filteredPosts.isEmpty {
             let post = posts[indexPath.row]
-            cell.configureCell(with: post)
+            cell.configureCell(with: post) {
+                self.navigateToPostDetails(for: post)
+            }
+                
             return cell
         } else {
             let post = filteredPosts[indexPath.row]
-            cell.configureCell(with: post)
+            cell.configureCell(with: post) {
+                self.navigateToPostDetails(for: post)
+            }
+                
             return cell
         }
     }
