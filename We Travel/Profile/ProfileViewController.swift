@@ -13,6 +13,7 @@ class ProfileViewController: UIViewController  {
     
     var myPosts: [Post] = []
     var userId: String?
+    var commentId: String?
     var post: Post?
     
     @IBOutlet weak var profileImage: UIImageView!
@@ -111,6 +112,7 @@ class ProfileViewController: UIViewController  {
                 
             let db = Firestore.firestore()
             let userDocument = db.collection("userDetails").document(userId)
+            let profile = db.collection("users")
             
             userDocument.getDocument { (document, error) in
                 if let document, document.exists {
@@ -123,6 +125,19 @@ class ProfileViewController: UIViewController  {
                     print("Dados não encontrados \(error?.localizedDescription ?? "Erro inesperado")")
                 }
             }
+        
+        profile.whereField("uid", isEqualTo: userId).getDocuments { snapshot, error in
+            if let error = error {
+                print("erro ao resgatar dados do gmail \(error.localizedDescription)")
+            } else if let document = snapshot?.documents.first {
+                if let profileimageUrlString = document.data()["photoURL"] as? String,
+                   let profileImageUrl = URL(string: profileimageUrlString) {
+                    self.loadProfileImage(from: profileImageUrl)
+                }
+                let profileName = document.data()["displayName"] as? String
+                self.profileName.text = profileName
+            }
+        }
         
         db.collection("posts").whereField("userId", isEqualTo: userId).getDocuments { snapshot, error in
             if let error = error {

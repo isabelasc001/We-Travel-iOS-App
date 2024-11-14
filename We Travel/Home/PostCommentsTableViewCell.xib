@@ -127,6 +127,7 @@
                                             </attributedString>
                                         </buttonConfiguration>
                                         <connections>
+                                            <action selector="starChatCommentOwnerButtonPressed:" destination="KGk-i7-Jjw" eventType="touchUpInside" id="fFs-6O-L34"/>
                                             <action selector="starChatCommentOwnersPressed:" destination="KGk-i7-Jjw" eventType="touchUpInside" id="gc7-dh-w6L"/>
                                         </connections>
                                     </button>
@@ -144,6 +145,7 @@
                                         </buttonConfiguration>
                                         <connections>
                                             <action selector="visitCommentOwnersProfilePressed:" destination="KGk-i7-Jjw" eventType="touchUpInside" id="cEC-8n-MSV"/>
+                                            <action selector="visitCommentsOwnerProfileButtonPressed:" destination="KGk-i7-Jjw" eventType="touchUpInside" id="LeK-p7-wZc"/>
                                         </connections>
                                     </button>
                                 </subviews>

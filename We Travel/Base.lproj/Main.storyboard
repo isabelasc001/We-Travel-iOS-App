@@ -997,36 +997,67 @@
             <objects>
                 <navigationController title="MessagesNavigationController" id="hkc-za-gNj" sceneMemberID="viewController">
                     <tabBarItem key="tabBarItem" title="Mensagens" image="message.fill" catalog="system" id="dW2-eO-urQ"/>
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="cYh-28-OJ6">
-                        <rect key="frame" x="0.0" y="48" width="414" height="44"/>
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" restorationIdentifier="chats" largeTitles="YES" id="cYh-28-OJ6">
+                        <rect key="frame" x="0.0" y="48" width="414" height="96"/>
                         <autoresizingMask key="autoresizingMask"/>
+                        <color key="barTintColor" red="0.93825546739999999" green="0.42166653459999998" blue="0.0061832413969999996" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <textAttributes key="titleTextAttributes">
+                            <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <color key="textShadowColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        </textAttributes>
+                        <navigationBarAppearance key="compactScrollEdgeAppearance" backgroundEffect="regular">
+                            <color key="backgroundColor" red="0.93825546739999999" green="0.42166653459999998" blue="0.0061832413969999996" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <textAttributes key="titleTextAttributes"/>
+                        </navigationBarAppearance>
                     </navigationBar>
                     <connections>
-                        <segue destination="gL1-fz-CD4" kind="relationship" relationship="rootViewController" id="yRr-6s-HNj"/>
+                        <segue destination="BQD-mP-0dG" kind="relationship" relationship="rootViewController" id="mCE-qw-mfa"/>
                     </connections>
                 </navigationController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="DAX-uW-yma" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="4377" y="49"/>
         </scene>
-        <!--MessagesViewController-->
-        <scene sceneID="vFQ-A4-GOb">
+        <!--AppMessagesViewController-->
+        <scene sceneID="Um6-Hj-TNv">
             <objects>
-                <tableViewController storyboardIdentifier="MessagesViewController" title="MessagesViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="gL1-fz-CD4" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="-1" estimatedSectionFooterHeight="-1" id="yBg-Rv-umd">
+                <viewController storyboardIdentifier="MessagesViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="BQD-mP-0dG" userLabel="AppMessagesViewController" customClass="AppMessagesViewController" customModule="We_Travel" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="jUV-1R-JQl">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" fixedFrame="YES" restorationIdentifier="MessagesTableView" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="-1" estimatedSectionFooterHeight="-1" translatesAutoresizingMaskIntoConstraints="NO" id="daa-1c-cMh">
+                                <rect key="frame" x="0.0" y="92" width="414" height="721"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                            </tableView>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="iDR-FQ-QcL"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                        <connections>
-                            <outlet property="dataSource" destination="gL1-fz-CD4" id="oTT-CZ-CW1"/>
-                            <outlet property="delegate" destination="gL1-fz-CD4" id="VAj-cS-Sij"/>
-                        </connections>
-                    </tableView>
-                    <navigationItem key="navigationItem" id="eOQ-J9-h2Q"/>
-                </tableViewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="2Sc-2W-lGm" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+                    </view>
+                    <navigationItem key="navigationItem" title="Conversas" id="Tcc-XK-bCt"/>
+                    <connections>
+                        <outlet property="chatTableview" destination="daa-1c-cMh" id="wgE-Km-0iH"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="XEG-IL-uWX" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="5461" y="447"/>
+            <point key="canvasLocation" x="5686.9565217391309" y="138.61607142857142"/>
+        </scene>
+        <!--Chat View Controller-->
+        <scene sceneID="WAw-Fx-4p9">
+            <objects>
+                <viewController storyboardIdentifier="ChatViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="2fJ-vg-glq" customClass="ChatViewController" customModule="We_Travel" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="8cc-gg-ToK">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <viewLayoutGuide key="safeArea" id="6u7-nl-vWv"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                    </view>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="b8V-SG-QAF" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="6855" y="139"/>
         </scene>
         <!--ConfigurationsNavigationController-->
         <scene sceneID="EzH-4D-pGa">

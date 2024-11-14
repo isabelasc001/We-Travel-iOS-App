@@ -13,6 +13,7 @@ class PostCommentsTableViewCell: UITableViewCell {
     
     var comment: Comment?
     var post: Post?
+    var commentUserId: String?
     
     @IBOutlet weak var postedByLabel: UILabel!
     
@@ -34,6 +35,7 @@ class PostCommentsTableViewCell: UITableViewCell {
     
     override func awakeFromNib() {
         super.awakeFromNib()
+        commentUserId = comment?.userId
     }
     
     func configureCommentCell(with comment: Comment, post: Post) {
@@ -48,8 +50,9 @@ class PostCommentsTableViewCell: UITableViewCell {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         if let profileVC = storyboard.instantiateViewController(withIdentifier: "ProfileViewController") as? ProfileViewController {
             profileVC.userId = userId
-//            profileVC. = post
-//            navigationController?.pushViewController(profileVC, animated: true)
+            if let navigationController = self.window?.rootViewController as? UINavigationController {
+                    navigationController.setViewControllers([profileVC], animated: true)
+                }
         }
     }
     
@@ -116,14 +119,14 @@ class PostCommentsTableViewCell: UITableViewCell {
     @IBAction func deleteMyCommentButtonPressed(_ sender: Any) {
     }
             
-    @IBAction func visitCommentOwnerProfileButtonPressed(_ sender: Any) {
-//        guard let userId = postUserId else { return }
-//        navigateToUserProfile(with: userId)
+    @IBAction func visitCommentsOwnerProfileButtonPressed(_ sender: Any) {
+        guard let userId = commentUserId else { return }
+        navigateToUserProfile(with: userId)
     }
-            
+    
     @IBAction func starChatCommentOwnerButtonPressed(_ sender: Any) {
     }
-            
+    
     @IBAction func dislikeCommentButtonPressed(_ sender: Any) {
         editCommentLikesDislikes(isLike: false)
     }
@@ -131,15 +134,13 @@ class PostCommentsTableViewCell: UITableViewCell {
     @IBAction func likeCommentButtonPressed(_ sender: Any) {
         editCommentLikesDislikes(isLike: true)
     }
-            
+        
     override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
                 
         }
     }
 
-        
-//
 //        func editCommentLikesDislikes(isLike: Bool) {
 //            guard let commentId = comment?.commentId, let userId = Auth.auth().currentUser?.uid, let postId = post?.postId else { return }
 //
