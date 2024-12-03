@@ -49,6 +49,7 @@ class NewPostViewController: UIViewController {
         postDescriptionTextView.layer.shadowOpacity = 0.2
         postDescriptionTextView.layer.shadowOffset = CGSize(width: 0, height: 2)
         postDescriptionTextView.layer.shadowRadius = 4
+        postDescriptionTextView.layer.masksToBounds = false
         postDescriptionTextView.backgroundColor = .white
         postDescriptionTextView.layer.borderColor = UIColor.orange.cgColor
         postDescriptionTextView.layer.borderWidth = 1
@@ -61,11 +62,9 @@ class NewPostViewController: UIViewController {
         filterTagsTextField.backgroundColor = .white
         filterTagsTextField.layer.borderColor = UIColor.orange.cgColor
         filterTagsTextField.layer.borderWidth = 1
-        
     }
     
     @IBAction func cancelPostButtonPressed(_ sender: Any) {
-        
         clearTextFields()
         
         if let tabBarController = self.tabBarController {
@@ -95,26 +94,31 @@ class NewPostViewController: UIViewController {
             "userId": currentUser.uid
         ]
         
-        var postRef: DocumentReference? = nil
-        postRef = db.collection("posts").addDocument(data: post) {error in
-            if let error = error {
-                print("erro ao salvar conteúdo da postagem: \(error.localizedDescription) ")
-            } else {
-                print("postagem salva com sucesso")
-                if let documentId = postRef?.documentID {
-                        postRef?.updateData(["postId": documentId]) { error in
-                            if let error = error {
-                                print("Erro ao atualizar postId: \(error.localizedDescription)")
-                            } else {
-                                print("postId atualizado com sucesso")
+        if postTitle.isEmpty || postDescription.isEmpty || filterTags.isEmpty {
+            self.dismiss(animated: true, completion: nil)
+            print("campos vazios não foi possivel realizar postagem")
+        } else {
+            var postRef: DocumentReference? = nil
+            postRef = db.collection("posts").addDocument(data: post) {error in
+                if let error = error {
+                    print("erro ao salvar conteúdo da postagem: \(error.localizedDescription) ")
+                } else {
+                    print("postagem salva com sucesso")
+                    if let documentId = postRef?.documentID {
+                            postRef?.updateData(["postId": documentId]) { error in
+                                if let error = error {
+                                    print("Erro ao atualizar postId: \(error.localizedDescription)")
+                                } else {
+                                    print("postId atualizado com sucesso")
+                                }
                             }
                         }
+                    self.clearTextFields()
+                    NotificationCenter.default.post(name: NSNotification.Name("newPostAdded"), object: nil)
+                    
+                    if let tabBarController = self.tabBarController {
+                        tabBarController.selectedIndex = 0
                     }
-                self.clearTextFields()
-                NotificationCenter.default.post(name: NSNotification.Name("newPostAdded"), object: nil)
-                
-                if let tabBarController = self.tabBarController {
-                    tabBarController.selectedIndex = 0
                 }
             }
         }

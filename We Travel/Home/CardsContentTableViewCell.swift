@@ -7,9 +7,15 @@
 
 import UIKit
 import FirebaseAuth
+import FirebaseFirestore
+
+protocol CardsContentCellDelegate: AnyObject {
+    func deletePost(_ post: Post)
+}
 
 class CardsContentTableViewCell: UITableViewCell {
     
+    weak var delegate: CardsContentCellDelegate?
     var onSeeMoreButton: (() -> Void)?
     var post: Post?
     
@@ -32,14 +38,22 @@ class CardsContentTableViewCell: UITableViewCell {
     override func awakeFromNib() {
         super.awakeFromNib()
         setupStyle()
-    }
 
+    }
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+
+        contentView.frame = contentView.frame.inset(by: UIEdgeInsets(top: 0, left: 8, bottom: 8, right: 8))
+    }
+    
     func configureCell(with post: Post, onSeeMore: @escaping () -> Void) {
             postTitleLabel.text = post.title
             postContentTextView.text = post.description
             tagsTextField.text = post.tags.joined(separator: ", ")
             postedByLabel.text = "Postado por \(post.postedBy)"
             self.onSeeMoreButton = onSeeMore
+            self.post = post
         
             guard let currentUser = Auth.auth().currentUser else { return }
             
@@ -60,16 +74,23 @@ class CardsContentTableViewCell: UITableViewCell {
         cardsContentTableViewCell.backgroundColor = .white
         cardsContentTableViewCell.layer.borderColor = UIColor.orange.cgColor
         cardsContentTableViewCell.layer.borderWidth = 1
+        cardsContentTableViewCell.backgroundColor = UIColor.orange
+        
+        postContentTextView.backgroundColor = UIColor.orange
+        deletePostButton.backgroundColor = UIColor.orange
        }
-    
-//    override func setSelected(_ selected: Bool, animated: Bool) {
-//        super.setSelected(selected, animated: animated)
-//    }
-    
+        
     @IBAction func expandContentButton(_ sender: Any) {
         onSeeMoreButton?()
     }
     
-  
+    @IBAction func deleteMyPostButtonPressed(_ sender: Any) {
+        guard let post = post else { return }
+            print("Botão de deletar pressionado para o post: \(post.title)")
+            delegate?.deletePost(post)
+    }
     
+    override func setSelected(_ selected: Bool, animated: Bool) {
+        super.setSelected(selected, animated: animated)
+    }
 }

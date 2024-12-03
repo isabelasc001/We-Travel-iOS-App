@@ -30,6 +30,7 @@ class PostDetailsViewController: UIViewController {
     var likes: Like?
     var comments: [Comment] = []
     var postUserId: String?
+    var chat: Chat?
 
     @IBOutlet weak var postTitleLabel: UILabel!
 
@@ -68,6 +69,82 @@ class PostDetailsViewController: UIViewController {
         tagsTextField.text = post.tags.joined(separator:", ")
         postedByLabel.text = "Postado por \(post.postedBy)"
     }
+    
+    func fetchOrCreateChat(participantUID: String, completion: @escaping (Chat?) -> Void) {
+        guard let currentUserUID = Auth.auth().currentUser?.uid else {
+            completion(nil)
+            return
+        }
+
+        let chatParticipants = [currentUserUID, participantUID].sorted()
+        let db = Firestore.firestore()
+        let chatsCollection = db.collection("chats")
+        let usersCollection = db.collection("users")
+
+        chatsCollection
+            .whereField("chatParticipants", isEqualTo: chatParticipants)
+            .getDocuments { snapshot, error in
+                if let error = error {
+                    print("Erro ao verificar chat: \(error.localizedDescription)")
+                    completion(nil)
+                    return
+                }
+
+                if let document = snapshot?.documents.first {
+        
+                    let data = document.data()
+                    let chat = Chat(
+                        chatId: document.documentID,
+                        lastMessage: data["lastMessage"] as? String ?? "",
+                        username: data["username"] as? String ?? "Desconhecido",
+                        chatParticipants: data["chatParticipants"] as? [String] ?? [],
+                        userPhotoURL: data["userPhotoURL"] as? String ?? "",
+                        hasUnreadMessages: data["hasUnreadMessages"] as? Bool ?? false,
+                        photoURL: data["userPhotoURL"] as? String ?? ""
+                    )
+                    completion(chat)
+                } else {
+                    usersCollection.document(participantUID).getDocument { userSnapshot, error in
+                        if let error = error {
+                            print("Erro ao buscar dados do usuário: \(error.localizedDescription)")
+                            completion(nil)
+                            return
+                        }
+
+                        let participantData = userSnapshot?.data()
+                        let participantName = participantData?["displayName"] as? String ?? "Usuário"
+                        let participantPhotoURL = participantData?["photoURL"] as? String ?? ""
+
+                        let newChat = chatsCollection.document()
+                        let chatData: [String: Any] = [
+                            "chatParticipants": chatParticipants,
+                            "lastMessage": "",
+                            "username": participantName, // Nome do outro participante
+                            "userPhotoURL": participantPhotoURL, // Foto do outro participante
+                            "hasUnreadMessages": []
+                        ]
+                        newChat.setData(chatData) { error in
+                            if let error = error {
+                                print("Erro ao criar chat: \(error.localizedDescription)")
+                                completion(nil)
+                            } else {
+                                let chat = Chat(
+                                    chatId: newChat.documentID,
+                                    lastMessage: "",
+                                    username: participantName,
+                                    chatParticipants: chatParticipants,
+                                    userPhotoURL: participantPhotoURL,
+                                    hasUnreadMessages: false,
+                                    photoURL: participantPhotoURL
+                                )
+                                completion(chat)
+                            }
+                        }
+                    }
+                }
+            }
+    }
+
     
     func updateLikesDislikesCount() {
         guard let postId = post?.postId else { return }
@@ -162,8 +239,38 @@ class PostDetailsViewController: UIViewController {
             }
         }
     }
-   
+    
+    func navigateToChatViewController(with chat: Chat, participantUID: String) {
+        fetchOrCreateChat(participantUID: participantUID) { [weak self] chat in
+                guard let self = self, let chat = chat else { return }
+                
+                DispatchQueue.main.async {
+                    let storyboard = UIStoryboard(name: "Main", bundle: nil)
+                    if let chatViewController = storyboard.instantiateViewController(withIdentifier: "ChatViewController") as? ChatViewController {
+                        chatViewController.chatId = chat.chatId
+                        chatViewController.otherUserName = chat.username // Se você tiver o nome do outro usuário
+                        self.navigationController?.pushViewController(chatViewController, animated: true)
+                    }
+                }
+            }
+    }
+    
     @IBAction func newChatButtonPressed(_ sender: Any) {
+        guard let postUserId = postUserId else {
+                print("Erro: postUserId não está definido.")
+                return
+            }
+
+            fetchOrCreateChat(participantUID: postUserId) { [weak self] chat in
+                guard let self = self else { return }
+
+                if let chat = chat {
+                    // Navega para a tela de chat
+                    self.navigateToChatViewController(with: chat, participantUID: postUserId)
+                } else {
+                    print("Erro: Não foi possível iniciar ou recuperar o chat.")
+                }
+            }
     }
     
     @IBAction func visitProfileButtonPressed(_ sender: Any) {
@@ -190,25 +297,31 @@ class PostDetailsViewController: UIViewController {
             "postId": newComment.postId
         ]
         
-        ref.setData(commentData) { error in
-            if let error = error {
-                print("erro ao salvar comentário \(error.localizedDescription)")
-            } else {
-                print("comentário salvo com sucesso")
-                let documentId = ref.documentID
-                ref.updateData(["commentId": documentId]) { error in
-                    if let error = error {
-                        print("erro ao atualizar commentId \(error.localizedDescription)")
-                    } else {
-                        print("commentId salvo com sucesso")
-                        newComment.commentId = documentId
-                        self.comments.append(newComment)
-                        DispatchQueue.main.async {
-                            self.displayCommentsTableView.reloadData()
+        if description.isEmpty {
+            self.dismiss(animated: true, completion: nil)
+            print("comentario vazio não é possivel postar")
+        } else {
+            ref.setData(commentData) { error in
+                if let error = error {
+                    print("erro ao salvar comentário \(error.localizedDescription)")
+                } else {
+                    print("comentário salvo com sucesso")
+                    let documentId = ref.documentID
+                    ref.updateData(["commentId": documentId]) { error in
+                        if let error = error {
+                            print("erro ao atualizar commentId \(error.localizedDescription)")
+                        } else {
+                            print("commentId salvo com sucesso")
+                            newComment.commentId = documentId
+                            self.comments.append(newComment)
+                            DispatchQueue.main.async {
+                                self.displayCommentsTableView.reloadData()
+                            }
                         }
                     }
+                    self.insertCommentTextView.text = ""
+                    self.resignFirstResponder()
                 }
-                self.insertCommentTextView.text = ""
             }
         }
     }
@@ -220,6 +333,46 @@ class PostDetailsViewController: UIViewController {
     
     @IBAction func numberOfDislikesButtonPressed(_ sender: Any) {
         editLikeDislike(isLike: false)
+    }
+}
+
+extension PostDetailsViewController: CommentsContentCellDelegate {
+    func deleteComment(_ comment: Comment) {
+        print("Botão excluir comentário clicado em comentário \(comment.description)")
+        
+        let alert = UIAlertController(title: "Excluir comentário", message: "Você tem certeza que deseja excluir este comentário? Essa ação não pode ser desfeita.", preferredStyle: .alert)
+        
+        alert.addAction(UIAlertAction(title: "Cencelar", style: .cancel, handler: nil))
+        
+        alert.addAction(UIAlertAction(title: "Excluir", style: .destructive, handler: { _ in
+            Firestore.firestore().collection("comments").document(comment.commentId).delete { error in
+                if let error = error {
+                    print("Erro ao deleter comnetário \(error.localizedDescription)")
+                    self.showDeletionError()
+                } else {
+                    print("Comentário excluido com sucesso")
+                    self.showDeletionSuccess()
+                    self.fetchCommentsForPost()
+                }
+            }
+        }))
+        
+        present(alert, animated: true, completion: nil)
+    }
+    
+    func showDeletionError() {
+        let alert = UIAlertController(title: "Erro",
+                                      message: "Não foi possível excluir o conteúdo desejado. Tente novamente mais tarde.",
+                                      preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "Okay", style: .default, handler: nil))
+        present(alert, animated: true, completion: nil)
+    }
+    
+    func showDeletionSuccess() {
+        let alert = UIAlertController(title: "Sucesso", message: "O conteúdo foi excluido com sucesso", preferredStyle: .alert)
+        
+        alert.addAction(UIAlertAction(title: "Okay", style: .default, handler: nil))
+        present(alert, animated: true, completion: nil)
     }
 }
 
@@ -241,6 +394,7 @@ extension PostDetailsViewController: UITableViewDataSource {
         if let post = post {
             cell.configureCommentCell(with: comments, post: post)
         }
+        cell.delegate = self
         return cell
     }
 }

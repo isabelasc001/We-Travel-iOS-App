@@ -9,8 +9,13 @@ import UIKit
 import FirebaseAuth
 import FirebaseFirestore
 
+protocol CommentsContentCellDelegate: AnyObject {
+    func deleteComment(_ comment: Comment)
+}
+
 class PostCommentsTableViewCell: UITableViewCell {
     
+    weak var delegate: CommentsContentCellDelegate?
     var comment: Comment?
     var post: Post?
     var commentUserId: String?
@@ -35,26 +40,82 @@ class PostCommentsTableViewCell: UITableViewCell {
     
     override func awakeFromNib() {
         super.awakeFromNib()
-        commentUserId = comment?.userId
     }
+    
+//    override func layoutSubviews() {
+//        super.layoutSubviews()
+//
+//        contentView.frame = contentView.frame.inset(by: UIEdgeInsets(top: 0, left: 2, bottom: 5, right: 2))
+//    }
     
     func configureCommentCell(with comment: Comment, post: Post) {
         postedByLabel.text = "Postado por \(comment.postedBy)"
         commentTextView.text = comment.description
         self.comment = comment
         self.post = post
+        self.commentUserId = comment.userId
         fetchCommentsLikesDislikesCount()
+        
+        guard let currentUser = Auth.auth().currentUser else { return }
+        
+            if comment.userId == currentUser.uid {
+                deleteMyCommentButton.isHidden = false
+            } else {
+                deleteMyCommentButton.isHidden = true
+            }
+    }
+    
+    func navigateToChatViewController(with chat: Chat) {
+        guard let windowScene = UIApplication.shared.connectedScenes
+            .first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene,
+              let window = windowScene.windows.first(where: { $0.isKeyWindow }),
+              let topController = window.rootViewController else {
+            print("Erro ao encontrar o controlador principal.")
+            return
+        }
+        let navigationController = (topController as? UINavigationController) ?? topController.navigationController
+        
+        guard let navController = navigationController else {
+            print("Erro: Controlador de navegação não encontrado.")
+            return
+        }
+        
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        guard let chatVC = storyboard.instantiateViewController(withIdentifier: "ChatViewController") as? ChatViewController else {
+            print("Erro: Não foi possível instanciar a tela de chat.")
+            return
+        }
+        
+        
+        navController.setViewControllers([chatVC], animated: true)
     }
     
     func navigateToUserProfile(with userId: String) {
-        let storyboard = UIStoryboard(name: "Main", bundle: nil)
-        if let profileVC = storyboard.instantiateViewController(withIdentifier: "ProfileViewController") as? ProfileViewController {
-            profileVC.userId = userId
-            if let navigationController = self.window?.rootViewController as? UINavigationController {
-                    navigationController.setViewControllers([profileVC], animated: true)
-                }
+        guard let windowScene = UIApplication.shared.connectedScenes
+            .first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene,
+              let window = windowScene.windows.first(where: { $0.isKeyWindow }),
+              let topController = window.rootViewController else {
+            print("Erro ao encontrar o controlador principal.")
+            return
         }
+        
+        let navigationController = (topController as? UINavigationController) ?? topController.navigationController
+        
+        guard let navController = navigationController else {
+            print("Erro: Controlador de navegação não encontrado.")
+            return
+        }
+        
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        guard let profileVC = storyboard.instantiateViewController(withIdentifier: "ProfileViewController") as? ProfileViewController else {
+            print("Erro: Não foi possível instanciar a tela de perfil.")
+            return
+        }
+        
+        profileVC.userId = userId
+        navController.pushViewController(profileVC, animated: true)
     }
+
     
     func editCommentLikesDislikes(isLike: Bool) {
         guard let commentId = comment?.commentId, let userId = Auth.auth().currentUser?.uid, let postId = post?.postId else { return }
@@ -117,14 +178,18 @@ class PostCommentsTableViewCell: UITableViewCell {
     }
             
     @IBAction func deleteMyCommentButtonPressed(_ sender: Any) {
+        guard let comment = comment else { return }
+        print("Botão de deletar pressionado para o comentário: \(comment.description)")
+        delegate?.deleteComment(comment)
     }
             
-    @IBAction func visitCommentsOwnerProfileButtonPressed(_ sender: Any) {
+    @IBAction func visitOwnersProfileButtonPressed(_ sender: Any) {
         guard let userId = commentUserId else { return }
         navigateToUserProfile(with: userId)
     }
     
     @IBAction func starChatCommentOwnerButtonPressed(_ sender: Any) {
+        
     }
     
     @IBAction func dislikeCommentButtonPressed(_ sender: Any) {

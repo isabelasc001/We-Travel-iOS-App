@@ -21,6 +21,7 @@ class ProfileDetailsViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupStyle()
     }
     
     func emptyFields() {
@@ -28,6 +29,48 @@ class ProfileDetailsViewController: UIViewController {
         AddNationalityTextField.text = ""
         spokenLanguagesTextField.text = ""
         residencyCountryTextField.text = ""
+    }
+    
+    func setupStyle() {
+        aboutMeTextView.layer.cornerRadius = 10
+        aboutMeTextView.layer.shadowColor = UIColor.black.cgColor
+        aboutMeTextView.layer.shadowOpacity = 0.2
+        aboutMeTextView.layer.shadowOffset = CGSize(width: 0, height: 2)
+        aboutMeTextView.layer.shadowRadius = 4
+        aboutMeTextView.layer.masksToBounds = false
+        aboutMeTextView.backgroundColor = .white
+        aboutMeTextView.layer.borderColor = UIColor.orange.cgColor
+        aboutMeTextView.layer.borderWidth = 1
+        
+        AddNationalityTextField.layer.cornerRadius = 10
+        AddNationalityTextField.layer.shadowColor = UIColor.black.cgColor
+        AddNationalityTextField.layer.shadowOpacity = 0.2
+        AddNationalityTextField.layer.shadowOffset = CGSize(width: 0, height: 2)
+        AddNationalityTextField.layer.shadowRadius = 4
+        AddNationalityTextField.layer.masksToBounds = false
+        AddNationalityTextField.backgroundColor = .white
+        AddNationalityTextField.layer.borderColor = UIColor.orange.cgColor
+        AddNationalityTextField.layer.borderWidth = 1
+        
+        spokenLanguagesTextField.layer.cornerRadius = 10
+        spokenLanguagesTextField.layer.shadowColor = UIColor.black.cgColor
+        spokenLanguagesTextField.layer.shadowOpacity = 0.2
+        spokenLanguagesTextField.layer.shadowOffset = CGSize(width: 0, height: 2)
+        spokenLanguagesTextField.layer.shadowRadius = 4
+        spokenLanguagesTextField.layer.masksToBounds = false
+        spokenLanguagesTextField.backgroundColor = .white
+        spokenLanguagesTextField.layer.borderColor = UIColor.orange.cgColor
+        spokenLanguagesTextField.layer.borderWidth = 1
+        
+        residencyCountryTextField.layer.cornerRadius = 10
+        residencyCountryTextField.layer.shadowColor = UIColor.black.cgColor
+        residencyCountryTextField.layer.shadowOpacity = 0.2
+        residencyCountryTextField.layer.shadowOffset = CGSize(width: 0, height: 2)
+        residencyCountryTextField.layer.shadowRadius = 4
+        residencyCountryTextField.layer.masksToBounds = false
+        residencyCountryTextField.backgroundColor = .white
+        residencyCountryTextField.layer.borderColor = UIColor.orange.cgColor
+        residencyCountryTextField.layer.borderWidth = 1
     }
     
     @IBAction func cancelOperationButtonPressed(_ sender: Any) {

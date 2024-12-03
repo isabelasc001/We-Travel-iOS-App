@@ -32,7 +32,7 @@ class ChatTableViewCell: UITableViewCell {
     
     func configureCell(chat: Chat) {
         userNameLabel.text = chat.username
-        lastMessageContentTextView.text = chat.lastMessage
+        lastMessageContentTextView.text = chat.lastMessage.isEmpty ? "No messages yet" : chat.lastMessage
         unreadMessagesImageView.isHidden = !chat.hasUnreadMessages
         if let url = URL(string: chat.photoURL) {
                 loadProfileImage(from: url)
@@ -54,5 +54,4 @@ class ChatTableViewCell: UITableViewCell {
             }
         }
     }
-    
 }

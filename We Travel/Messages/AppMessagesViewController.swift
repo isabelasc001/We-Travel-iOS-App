@@ -12,7 +12,6 @@ import FirebaseAuth
 struct Chat {
     var chatId: String
     var lastMessage: String
-    var timeStamp: Timestamp
     var username: String
     var chatParticipants: [String]
     var userPhotoURL: String
@@ -30,7 +29,7 @@ class AppMessagesViewController: UIViewController {
         super.viewDidLoad()
         chatTableview.delegate = self
         chatTableview.dataSource = self
-
+        
         chatTableview.register(UINib(nibName: "ChatTableViewCell", bundle: nil), forCellReuseIdentifier: "ChatsCell")
         fetchChats()
     }
@@ -44,9 +43,16 @@ class AppMessagesViewController: UIViewController {
                 print("erro ao buscar conversas \(error.localizedDescription)")
                 return
             }
-//            self.chats = snapshot?.documents.compactMap { doc in
-//                try? doc.data(as: Chat.self)
-//            } ?? []
+            self.chats = snapshot?.documents.compactMap { document -> Chat? in
+                let data = document.data()
+                return Chat(chatId: document.documentID,
+                            lastMessage: data["lastMessage"] as? String ?? "",
+                            username: data["username"] as? String ?? "Desconhecido",
+                            chatParticipants: data["chatParticipants"] as? [String] ?? [],
+                            userPhotoURL: data["userPhotoURL"] as? String ?? "",
+                            hasUnreadMessages: data["hasUnreadMessages"] as? Bool ?? false,
+                            photoURL: data["userPhotoURL"] as? String ?? ""
+                )} ?? []
             
             DispatchQueue.main.async {
                 self.chatTableview.reloadData()
@@ -73,10 +79,12 @@ extension AppMessagesViewController: UITableViewDelegate, UITableViewDataSource 
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let chat = chats[indexPath.row]
-            
-        let chatViewController = ChatViewController()
-        chatViewController.chatId = chat.chatId
-        navigationController?.pushViewController(chatViewController, animated: true)
         
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        if let chatViewController = storyboard.instantiateViewController(withIdentifier: "ChatViewController") as? ChatViewController {
+            chatViewController.chatId = chat.chatId
+            navigationController?.pushViewController(chatViewController, animated: true)
+        }
     }
 }
+

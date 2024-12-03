@@ -8,24 +8,17 @@
 import UIKit
 import MessageKit
 import InputBarAccessoryView
-import FirebaseMessaging
 import FirebaseFirestore
 import FirebaseAuth
 
 struct Message: MessageType {
+    let chatId: String
+    let chatContent: String
     var sender: SenderType
     var messageId: String
     var sentDate: Date
-    var kind: MessageKind
-    
-    init(documentData: [String: Any]) {
-        let senderId = documentData["senderId"] as? String ?? ""
-        let displayName = documentData["displayName"] as? String ?? "Unknown"
-        self.sender = Sender(senderId: senderId, displayName: displayName)
-        
-        self.messageId = documentData["messageId"] as? String ?? UUID().uuidString
-        self.sentDate = (documentData["sentDate"] as? Timestamp)?.dateValue() ?? Date()
-        self.kind = .text(documentData["kind"] as? String ?? "")
+    var kind: MessageKind {
+        return .text(chatContent)
     }
 }
 
@@ -40,6 +33,7 @@ class ChatViewController: MessagesViewController {
     var messages: [MessageType] = []
     var otherUserName: String?
     
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -50,18 +44,62 @@ class ChatViewController: MessagesViewController {
         
         loadMessages()
     }
+    
+    func loadMessages() {
+        guard let chatId = chatId else { return }
+        let db = Firestore.firestore()
+
+        db.collection("chats").document(chatId).collection("messages")
+            .order(by: "sentDate", descending: false)
+            .addSnapshotListener { snapshot, error in
+                guard let snapshot = snapshot else {
+                    print("Erro ao carregar mensagens: \(error?.localizedDescription ?? "Erro desconhecido")")
+                    return
+                }
+
+                self.messages = snapshot.documents.compactMap { document in
+                    let data = document.data()
+                    guard
+                        let id = data["id"] as? String,
+                        let content = data["content"] as? String,
+                        let senderId = data["senderId"] as? String,
+                        let senderName = data["senderName"] as? String,
+                        let sentDate = (data["sentDate"] as? Timestamp)?.dateValue()
+                    else {
+                        return nil
+                    }
+
+                    let sender = Sender(senderId: senderId, displayName: senderName)
+                    return Message(chatId: chatId, chatContent: content, sender: sender, messageId: id, sentDate: sentDate)
+                }
+
+                DispatchQueue.main.async {
+                    self.messagesCollectionView.reloadData()
+                    self.messagesCollectionView.scrollToLastItem(animated: true)
+                }
+            }
+    }
 }
 
-extension ChatViewController: MessagesDisplayDelegate, MessagesDataSource, MessagesLayoutDelegate {
-    
-    func configureAvatarView(_ avatarView: AvatarView, for message: MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) {
-        let initials = String(message.sender.displayName.prefix(1))
-        avatarView.set(avatar: Avatar(initials: initials))
-    }
-    
+extension ChatViewController: MessagesDataSource {
     var currentSender: MessageKit.SenderType {
         return Sender(senderId: Auth.auth().currentUser?.uid ?? "", displayName: Auth.auth().currentUser?.displayName ?? "Você")
-        
+    }
+    
+    func configureAvatarView(_ avatarView: AvatarView, for message: MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) {
+            if let sender = message.sender as? Sender {
+                    let initials = String(sender.displayName.prefix(1))
+                    avatarView.set(avatar: Avatar(initials: initials))
+                }
+    }
+    
+    func displayName(for message: MessageType, at indexPath: IndexPath) -> String? {
+            let message = messages[indexPath.row]
+            return message.sender.displayName
+        }
+    
+    func numberOfItems(inSection section: Int, in messagesCollectionView: MessagesCollectionView) -> Int {
+        return 1
     }
     
     func messageForItem(at indexPath: IndexPath, in messagesCollectionView: MessageKit.MessagesCollectionView) -> MessageKit.MessageType {
@@ -71,80 +109,53 @@ extension ChatViewController: MessagesDisplayDelegate, MessagesDataSource, Messa
     func numberOfSections(in messagesCollectionView: MessageKit.MessagesCollectionView) -> Int {
         return messages.count
     }
+    
+    func messagePadding(for message: MessageType, at indexPath: IndexPath) -> UIEdgeInsets {
+            return UIEdgeInsets(top: 8, left: 16, bottom: 8, right: 16)
+        }
+}
+
+extension ChatViewController: MessagesDisplayDelegate, MessagesLayoutDelegate {
 }
 
 extension ChatViewController: InputBarAccessoryViewDelegate {
     func inputBar(_ inputBar: InputBarAccessoryView, didPressSendButtonWith text: String) {
-        guard let chatId = chatId, let userId = Auth.auth().currentUser?.uid else {return}
+        guard let chatId = chatId else { return }
+        guard let currentUser = Auth.auth().currentUser else { return }
         
         let db = Firestore.firestore()
+        let messagesCollection = db.collection("chats").document(chatId).collection("messages")
         
         let messageId = UUID().uuidString
+        let sentDate = Date()
+        let sender = Sender(senderId: currentUser.uid, displayName: currentUser.displayName ?? "Você")
+        
+        let message = Message(chatId: chatId, chatContent: text, sender: sender, messageId: messageId, sentDate: sentDate)
+        
         let messageData: [String: Any] = [
-            "senderId": userId,
-            "displayName": Auth.auth().currentUser?.displayName ?? "Unknown",
-            "messageId": messageId,
-            "sentDate": Timestamp(date: Date()),
-            "kind": text
+            "id": messageId,
+            "content": text,
+            "senderId": sender.senderId,
+            "senderName": sender.displayName,
+            "sentDate": Timestamp(date: sentDate),
+            "kind": "text"
         ]
         
-        db.collection("chats").document(chatId).collection("messages").document(messageId).setData(messageData) { error in
+        messagesCollection.addDocument(data: messageData) { error in
             if let error = error {
-                print("erro ao enviar mensagem: \(error.localizedDescription)")
+                print("Erro ao enviar mensagem: \(error.localizedDescription)")
                 return
+            }
+            
+            self.messages.append(message)
+            DispatchQueue.main.async {
+                self.messagesCollectionView.reloadData()
+                self.messagesCollectionView.scrollToLastItem(animated: true)
             }
             inputBar.inputTextView.text = ""
         }
     }
 }
-
-extension ChatViewController {
-    
-    func loadMessages() {
-        guard let chatId = chatId else { return }
-        
-        let db = Firestore.firestore()
-        
-        db.collection("chats").document(chatId).collection("messages")
-            .order(by: "sentDate", descending: false)
-            .addSnapshotListener { snapshot, error in
-                guard let documents = snapshot?.documents else { return }
-                
-                self.messages = documents.compactMap { doc -> Message? in
-                    let data = doc.data()
-                    return Message(documentData: data)
-                }
-                self.messagesCollectionView.reloadData()
-                self.messagesCollectionView.scrollToLastItem()
-            }
-    }
-}
-
-//    func fetchMessages() {
-//        guard let chatId = chatId else {return}
-//
-//        Firestore.firestore().collection("chats").document(chatId).collection("messages").order(by: "sentDate").addSnapshotListener { [weak self] snapshot, error in
-//            guard let self = self, let documents = snapshot?.documents else {
-//                print("erro ao buscar mensagens: \(error?.localizedDescription ?? "erro desconhecido")")
-//                return
-//            }
-////            self.messages = documents.compactMap { doc -> Message? in
-////                let data = doc.data()
-//////                guard
-//////                    let senderId = data["senderId"] as? String
-//////                    let display
-////             return
-//            }
-//        }
-
-//    func currentSender() -> SenderType {
-//            return Sender(senderId: Auth.auth().currentUser?.uid ?? "", displayName: Auth.auth().currentUser?.displayName ?? "Você")
-//
-//        guard let user = Auth.auth().currentUser else {
-//            fatalError("usuário não autenticado")
-//        }
-//        return Sender(senderId: user.uid, displayName: user.displayName ?? "Usuário")
-//        }
 
 /*
 // MARK: - Navigation

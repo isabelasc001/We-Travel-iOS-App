@@ -22,6 +22,7 @@ class HomeViewController: UIViewController {
     
     var posts: [Post] = []
     var filteredPosts: [Post] = []
+    var post: Post?
     
     @IBOutlet weak var HomeSearchBar: UISearchBar!
     
@@ -102,6 +103,48 @@ class HomeViewController: UIViewController {
         fetchPostsDataFirestore()
     }
 }
+
+extension HomeViewController: CardsContentCellDelegate {
+    func deletePost(_ post: Post) {
+        print("Botão de excluir clicado para o post: \(post.title)")
+        
+        let alert = UIAlertController(title: "Excluir Postagem",
+                                      message: "Você tem certeza de que deseja excluir esta postagem? Essa ação não pode ser desfeita.",
+                                      preferredStyle: .alert)
+        
+        alert.addAction(UIAlertAction(title: "Cancelar", style: .cancel, handler: nil))
+        alert.addAction(UIAlertAction(title: "Excluir", style: .destructive, handler: { _ in
+            Firestore.firestore().collection("posts").document(post.postId).delete { error in
+                if let error = error {
+                    print("Erro ao excluir postagem: \(error.localizedDescription)")
+                    self.showDeletionError()
+                } else {
+                    print("Postagem excluída com sucesso.")
+                    self.showDeletionSuccess()
+                    self.fetchPostsDataFirestore()
+                }
+            }
+        }))
+        
+        present(alert, animated: true, completion: nil)
+    }
+    
+    func showDeletionError() {
+        let alert = UIAlertController(title: "Erro",
+                                      message: "Não foi possível excluir o conteúdo desejado. Tente novamente mais tarde.",
+                                      preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "Okay", style: .default, handler: nil))
+        present(alert, animated: true, completion: nil)
+    }
+    
+    func showDeletionSuccess() {
+        let alert = UIAlertController(title: "Sucesso", message: "O conteúdo foi excluido com sucesso", preferredStyle: .alert)
+        
+        alert.addAction(UIAlertAction(title: "Okay", style: .default, handler: nil))
+        present(alert, animated: true, completion: nil)
+    }
+}
+
 extension HomeViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let selectedPost = filteredPosts.isEmpty ? posts[indexPath.row] : filteredPosts[indexPath.row]
@@ -109,11 +152,7 @@ extension HomeViewController: UITableViewDelegate {
         }
     
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        
-        let spacing = CGFloat(3)
-        
-        cell.contentView.frame = cell.contentView.frame.inset(by: UIEdgeInsets(top: 3, left: spacing, bottom: 3, right: spacing))
-        
+
         homeTableView.separatorStyle = .none
     }
 }
@@ -138,14 +177,14 @@ extension HomeViewController: UITableViewDataSource {
             cell.configureCell(with: post) {
                 self.navigateToPostDetails(for: post)
             }
-                
+            cell.delegate = self
             return cell
         } else {
             let post = filteredPosts[indexPath.row]
             cell.configureCell(with: post) {
                 self.navigateToPostDetails(for: post)
             }
-                
+            cell.delegate = self
             return cell
         }
     }
