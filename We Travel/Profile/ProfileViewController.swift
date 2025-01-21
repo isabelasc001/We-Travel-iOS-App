@@ -15,6 +15,7 @@ class ProfileViewController: UIViewController  {
     var userId: String?
     var commentId: String?
     var post: Post?
+    var comment: Comment?  
     
     @IBOutlet weak var profileImage: UIImageView!
     

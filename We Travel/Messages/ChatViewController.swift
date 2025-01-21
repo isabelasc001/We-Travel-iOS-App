@@ -45,6 +45,37 @@ class ChatViewController: MessagesViewController {
         loadMessages()
     }
     
+    func sendMessage(_ text: String) {
+        guard let user  = Auth.auth().currentUser, let chatId = chatId else { return }
+        let db = Firestore.firestore()
+        
+        let messageData: [String: Any] = [
+            "content": text,
+            "senderId": user,
+            "sentDate": Timestamp(date: Date())
+        ]
+
+        db.collection("chats").document(chatId).collection("messages").addDocument(data: messageData) { error in
+            if let error = error {
+                print("Erro ao enviar mensagem: \(error.localizedDescription)")
+                return
+            }
+            
+//            let chatUpdate: [String: Any] = [
+//                "lastMessage": ,
+//                "lastMessageDate": Timestamp(date: Date())
+//            ]
+//
+//            db.collection("chats").document(chatId).updateData(chatUpdate) { error in
+//                if let error = error {
+//                    print("Erro ao atualizar lastMessage: \(error.localizedDescription)")
+//                } else {
+//                    print("lastMessage atualizado com sucesso no Firestore.")
+//                }
+//            }
+        }
+    }
+
     func loadMessages() {
         guard let chatId = chatId else { return }
         let db = Firestore.firestore()
@@ -130,8 +161,6 @@ extension ChatViewController: InputBarAccessoryViewDelegate {
         let sentDate = Date()
         let sender = Sender(senderId: currentUser.uid, displayName: currentUser.displayName ?? "Você")
         
-        let message = Message(chatId: chatId, chatContent: text, sender: sender, messageId: messageId, sentDate: sentDate)
-        
         let messageData: [String: Any] = [
             "id": messageId,
             "content": text,
@@ -147,22 +176,12 @@ extension ChatViewController: InputBarAccessoryViewDelegate {
                 return
             }
             
-            self.messages.append(message)
             DispatchQueue.main.async {
                 self.messagesCollectionView.reloadData()
                 self.messagesCollectionView.scrollToLastItem(animated: true)
             }
             inputBar.inputTextView.text = ""
+            NotificationCenter.default.post(name: NSNotification.Name("chatLastMessageUpdate"), object: nil)
         }
     }
 }
-
-/*
-// MARK: - Navigation
-
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-    // Get the new view controller using segue.destination.
-    // Pass the selected object to the new view controller.
-}
-*/

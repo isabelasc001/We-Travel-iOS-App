@@ -9,7 +9,7 @@ import UIKit
 import FirebaseAuth
 import FirebaseFirestore
 
-class NewPostViewController: UIViewController {
+class NewPostViewController: KeyboardHandlingViewController {
     
     @IBOutlet weak var postTitleLabel: UILabel!
     
@@ -23,10 +23,64 @@ class NewPostViewController: UIViewController {
     
     @IBOutlet weak var filterTagsTextField: UITextField!
     
+    @IBOutlet weak var bottomConstraint: NSLayoutConstraint?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         styleFields()
-}
+        
+        postTitleTextField.addDoneButtonOnKeyboard()
+        postDescriptionTextView.addDoneButtonOnKeyboard()
+        filterTagsTextField.addDoneButtonOnKeyboard()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(keyboardWillShow),
+            name: UIResponder.keyboardWillShowNotification,
+            object: nil
+        )
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(keyboardWillHide),
+            name: UIResponder.keyboardWillHideNotification,
+            object: nil
+        )
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        
+        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
+    }
+    
+    @objc
+    private func keyboardWillShow(notification: Notification) {
+        guard let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else { return }
+        bottomConstraint?.constant += keyboardFrame.height
+        
+        let filterTagsTextFieldMaxY = filterTagsTextField.frame.maxY
+        if filterTagsTextFieldMaxY > keyboardFrame.origin.y {
+            let diff = filterTagsTextFieldMaxY - keyboardFrame.origin.y
+            print(diff)
+            bottomConstraint?.constant = diff + 30 + 20
+            UIView.animate(withDuration: 0.2) {
+                self.view.layoutIfNeeded()
+            }
+        }
+    }
+    
+    @objc func keyboardWillHide(notification: Notification) {
+        bottomConstraint?.constant = 30
+        UIView.animate(withDuration: 0.2) {
+            self.view.layoutIfNeeded()
+        }
+    }
     
     func clearTextFields() {
         postTitleTextField.text = ""
@@ -64,6 +118,13 @@ class NewPostViewController: UIViewController {
         filterTagsTextField.layer.borderWidth = 1
     }
     
+    func showEmptyFieldsFeedback() {
+        let alert = UIAlertController(title: "Atenção", message: "Os campos precisam estar preenchidos para realizar a postagem", preferredStyle: .alert)
+        
+        alert.addAction(UIAlertAction(title: "Okay", style: .default, handler: nil))
+        present(alert, animated: true, completion: nil)
+    }
+    
     @IBAction func cancelPostButtonPressed(_ sender: Any) {
         clearTextFields()
         
@@ -96,6 +157,7 @@ class NewPostViewController: UIViewController {
         
         if postTitle.isEmpty || postDescription.isEmpty || filterTags.isEmpty {
             self.dismiss(animated: true, completion: nil)
+            self.showEmptyFieldsFeedback()
             print("campos vazios não foi possivel realizar postagem")
         } else {
             var postRef: DocumentReference? = nil

@@ -9,14 +9,6 @@ import UIKit
 import FirebaseFirestore
 import FirebaseAuth
 
-struct Comment {
-    let description: String
-    let postedBy: String
-    let userId: String
-    let postId: String
-    var commentId: String
-}
-
 struct Like {
     var type: Int
     let postId: String
@@ -24,13 +16,15 @@ struct Like {
     let commentId: String?
 }
 
-class PostDetailsViewController: UIViewController {
+class PostDetailsViewController: KeyboardHandlingViewController {
     
     var post: Post?
     var likes: Like?
     var comments: [Comment] = []
     var postUserId: String?
     var chat: Chat?
+    var commentUserId: String?
+    var comment: Comment?
 
     @IBOutlet weak var postTitleLabel: UILabel!
 
@@ -48,6 +42,16 @@ class PostDetailsViewController: UIViewController {
     
     @IBOutlet weak var postedByLabel: UILabel!
     
+    @IBOutlet weak var likeCommentButton: UIButton!
+    
+    @IBOutlet weak var dislikeCommentButton: UIButton!
+    
+    @IBOutlet weak var startChatButton: UIButton!
+    
+    @IBOutlet weak var visitProfileButton: UIButton!
+    
+    @IBOutlet weak var postNewCommentButton: UIButton!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         displayCommentsTableView.delegate = self
@@ -57,8 +61,40 @@ class PostDetailsViewController: UIViewController {
         updateLikesDislikesCount()
         fetchCommentsForPost()
         
+        likeCommentButton.tintColor = UIColor.green
+        dislikeCommentButton.tintColor = UIColor.red
+        visitProfileButton.tintColor = UIColor.orange
+        startChatButton.tintColor = UIColor.orange
+        postNewCommentButton.tintColor = UIColor.orange
+        
+        insertCommentTextView.addDoneButtonOnKeyboard()
+        
+        commentUserId = comment?.userId
         postUserId = post?.userId
         displayCommentsTableView.register(UINib(nibName: "PostCommentsTableViewCell", bundle: nil), forCellReuseIdentifier: "CommentsCell")
+        
+        setupNavigationBar()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        view.setNeedsLayout()
+        view.layoutIfNeeded()
+    }
+    
+    private func setupNavigationBar() {
+        navigationItem.leftBarButtonItem = .init(title: "Fechar", style: .plain, target: self, action: #selector(close))
+    }
+    
+    @objc
+    private func close() {
+        dismiss(animated: true, completion: nil)
+    }
+    
+    func setupStyle() {
+        insertCommentTextView.layer.borderColor = UIColor.orange.cgColor
+        insertCommentTextView.layer.borderWidth = 1
+        insertCommentTextView.layer.cornerRadius = 10
     }
     
     func configurePostDetails() {
@@ -121,7 +157,8 @@ class PostDetailsViewController: UIViewController {
                             "lastMessage": "",
                             "username": participantName, // Nome do outro participante
                             "userPhotoURL": participantPhotoURL, // Foto do outro participante
-                            "hasUnreadMessages": []
+                            "hasUnreadMessages": ["senderUID": true, "receiverUID": false]
+
                         ]
                         newChat.setData(chatData) { error in
                             if let error = error {
@@ -145,7 +182,6 @@ class PostDetailsViewController: UIViewController {
             }
     }
 
-    
     func updateLikesDislikesCount() {
         guard let postId = post?.postId else { return }
         let db = Firestore.firestore()
@@ -207,14 +243,9 @@ class PostDetailsViewController: UIViewController {
         if let profileVC = storyboard.instantiateViewController(withIdentifier: "ProfileViewController") as? ProfileViewController {
             profileVC.userId = userId
             profileVC.post = post
+            
             navigationController?.pushViewController(profileVC, animated: true)
         }
-    }
-    
-    func setupStyle() {
-        insertCommentTextView.layer.borderColor = UIColor.orange.cgColor
-        insertCommentTextView.layer.borderWidth = 1
-        insertCommentTextView.layer.cornerRadius = 10
     }
     
     func fetchCommentsForPost() {
@@ -240,19 +271,26 @@ class PostDetailsViewController: UIViewController {
         }
     }
     
-    func navigateToChatViewController(with chat: Chat, participantUID: String) {
+    private func navigateToChatViewController(with chat: Chat, participantUID: String) {
         fetchOrCreateChat(participantUID: participantUID) { [weak self] chat in
-                guard let self = self, let chat = chat else { return }
-                
-                DispatchQueue.main.async {
-                    let storyboard = UIStoryboard(name: "Main", bundle: nil)
-                    if let chatViewController = storyboard.instantiateViewController(withIdentifier: "ChatViewController") as? ChatViewController {
-                        chatViewController.chatId = chat.chatId
-                        chatViewController.otherUserName = chat.username // Se você tiver o nome do outro usuário
-                        self.navigationController?.pushViewController(chatViewController, animated: true)
+            guard let self = self, let chat = chat else { return }
+            
+            DispatchQueue.main.async {
+                let storyboard = UIStoryboard(name: "Main", bundle: nil)
+                if let chatViewController = storyboard.instantiateViewController(withIdentifier: "ChatViewController") as? ChatViewController {
+                    chatViewController.chatId = chat.chatId
+                    chatViewController.title = chat.username
+                    
+                    if let navigationController = self.navigationController {
+                        navigationController.pushViewController(chatViewController, animated: true)
+                    } else {
+                        let navigationController = UINavigationController(rootViewController: chatViewController)
+                        navigationController.modalPresentationStyle = .fullScreen
+                        self.present(navigationController, animated: true, completion: nil)
                     }
                 }
             }
+        }
     }
     
     @IBAction func newChatButtonPressed(_ sender: Any) {
@@ -265,7 +303,6 @@ class PostDetailsViewController: UIViewController {
                 guard let self = self else { return }
 
                 if let chat = chat {
-                    // Navega para a tela de chat
                     self.navigateToChatViewController(with: chat, participantUID: postUserId)
                 } else {
                     print("Erro: Não foi possível iniciar ou recuperar o chat.")
@@ -321,6 +358,7 @@ class PostDetailsViewController: UIViewController {
                     }
                     self.insertCommentTextView.text = ""
                     self.resignFirstResponder()
+                    self.view.endEditing(true) 
                 }
             }
         }
@@ -337,6 +375,7 @@ class PostDetailsViewController: UIViewController {
 }
 
 extension PostDetailsViewController: CommentsContentCellDelegate {
+    
     func deleteComment(_ comment: Comment) {
         print("Botão excluir comentário clicado em comentário \(comment.description)")
         
@@ -356,7 +395,6 @@ extension PostDetailsViewController: CommentsContentCellDelegate {
                 }
             }
         }))
-        
         present(alert, animated: true, completion: nil)
     }
     
@@ -373,6 +411,32 @@ extension PostDetailsViewController: CommentsContentCellDelegate {
         
         alert.addAction(UIAlertAction(title: "Okay", style: .default, handler: nil))
         present(alert, animated: true, completion: nil)
+    }
+    
+    func navigateToProfile(userId: String, comment: Comment) {
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        if let profileViewController = storyboard.instantiateViewController(withIdentifier: "ProfileViewController") as? ProfileViewController {
+            profileViewController.userId = userId
+            profileViewController.comment = comment
+            navigationController?.pushViewController(profileViewController, animated: true)
+        }
+    }
+    
+    func navigateToChat(participantUID: String, comment: Comment) {
+        
+        fetchOrCreateChat(participantUID: participantUID) { [weak self] chat in
+            guard let chat = chat else {
+                print("Erro ao criar ou buscar chat")
+                return
+            }
+            DispatchQueue.main.async {
+                let storyboard = UIStoryboard(name: "Main", bundle: nil)
+                if let chatViewController = storyboard.instantiateViewController(withIdentifier: "ChatViewController") as? ChatViewController {
+                        chatViewController.chatId = chat.chatId
+                    self?.navigationController?.pushViewController(chatViewController, animated: true)
+                }
+            }
+        }
     }
 }
 
@@ -398,3 +462,109 @@ extension PostDetailsViewController: UITableViewDataSource {
         return cell
     }
 }
+
+//    func navigateToChatViewController(with chat: Chat, participantUID: String) {
+//        fetchOrCreateChat(participantUID: participantUID) { [weak self] chat in
+//                guard let self = self, let chat = chat else { return }
+//
+//                DispatchQueue.main.async {
+//                    let storyboard = UIStoryboard(name: "Main", bundle: nil)
+//                       if let chatViewController = storyboard.instantiateViewController(withIdentifier: "ChatViewController") as? ChatViewController {
+//                           chatViewController.chatId = chat.chatId
+//                           chatViewController.title = chat.username
+//                           self.navigationController?.pushViewController(chatViewController, animated: true)
+//                       }
+//                  }
+//            }
+//        }
+
+//guard let currentUserUID = Auth.auth().currentUser?.uid else { return }
+//
+//            let storyboard = UIStoryboard(name: "Main", bundle: nil)
+//            if let chatViewController = storyboard.instantiateViewController(withIdentifier: "ChatViewController") as? ChatViewController {
+//                chatViewController.chatId = chat?.chatId
+//                chatViewController.title = chat?.username
+//                navigationController?.pushViewController(chatViewController, animated: true)
+//            }
+//
+//            let chatParticipants = [currentUserUID, participantUID].sorted()
+//            let db = Firestore.firestore()
+//            let chatsCollection = db.collection("chats")
+//            let usersCollection = db.collection("users")
+//
+//            chatsCollection
+//                .whereField("chatParticipants", isEqualTo: chatParticipants)
+//                .getDocuments { snapshot, error in
+//                    if let error = error {
+//                        print("Erro ao verificar chat: \(error.localizedDescription)")
+//
+//                        return
+//                    }
+//
+//                    if let document = snapshot?.documents.first {
+//
+//                        let data = document.data()
+//                        let chat = Chat(
+//                            chatId: document.documentID,
+//                            lastMessage: data["lastMessage"] as? String ?? "",
+//                            username: data["username"] as? String ?? "Desconhecido",
+//                            chatParticipants: data["chatParticipants"] as? [String] ?? [],
+//                            userPhotoURL: data["userPhotoURL"] as? String ?? "",
+//                            hasUnreadMessages: data["hasUnreadMessages"] as? Bool ?? false,
+//                            photoURL: data["userPhotoURL"] as? String ?? ""
+//                        )
+//                    } else {
+//                        usersCollection.document(participantUID).getDocument { userSnapshot, error in
+//                            if let error = error {
+//                                print("Erro ao buscar dados do usuário: \(error.localizedDescription)")
+//
+//                                return
+//                            }
+//
+//                            let participantData = userSnapshot?.data()
+//                            let participantName = participantData?["displayName"] as? String ?? "Usuário"
+//                            let participantPhotoURL = participantData?["photoURL"] as? String ?? ""
+//
+//                            let newChat = chatsCollection.document()
+//                            let chatData: [String: Any] = [
+//                                "chatParticipants": chatParticipants,
+//                                "lastMessage": "",
+//                                "username": participantName, // Nome do outro participante
+//                                "userPhotoURL": participantPhotoURL, // Foto do outro participante
+//                                "hasUnreadMessages": ["senderUID": true, "receiverUID": false]
+//
+//                            ]
+//                            newChat.setData(chatData) { error in
+//                                if let error = error {
+//                                    print("Erro ao criar chat: \(error.localizedDescription)")
+//
+//                                } else {
+//                                    let chat = Chat(
+//                                        chatId: newChat.documentID,
+//                                        lastMessage: "",
+//                                        username: participantName,
+//                                        chatParticipants: chatParticipants,
+//                                        userPhotoURL: participantPhotoURL,
+//                                        hasUnreadMessages: false,
+//                                        photoURL: participantPhotoURL
+//                                    )
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//
+//guard let commentUserId = commentUserId else {
+//                    print("Erro: commentUserId não está definido.")
+//                    return
+//                }
+//
+//                fetchOrCreateChat(participantUID: commentUserId) { [weak self] chat in
+//                    guard let self = self else { return }
+//
+//                    if let chat = chat {
+//                        self.navigateToChatViewController(with: chat, participantUID: commentUserId)
+//                    } else {
+//                        print("Erro: Não foi possível iniciar ou recuperar o chat.")
+//                    }
+//                }

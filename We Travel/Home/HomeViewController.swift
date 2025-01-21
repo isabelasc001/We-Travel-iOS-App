@@ -49,10 +49,17 @@ class HomeViewController: UIViewController {
     }
     
     func navigateToPostDetails(for post: Post) {
+//        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+//        if let postDetailsVC = storyboard.instantiateViewController(withIdentifier: "PostDetailsViewController") as? PostDetailsViewController {
+//            postDetailsVC.post = post
+//            navigationController?.pushViewController(postDetailsVC, animated: true)
+//        }
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         if let postDetailsNavController = storyboard.instantiateViewController(withIdentifier: "PostDetailsNavigationController") as? UINavigationController,
            let postDetailsVC = postDetailsNavController.viewControllers.first as? PostDetailsViewController {
             postDetailsVC.post = post
+////            navigationController?.pushViewController(postDetailsVC, animated: true)
+//            postDetailsNavController.pushViewController(postDetailsVC, animated: true)
             self.present(postDetailsNavController, animated: true, completion: nil)
         }
     }

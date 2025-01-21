@@ -9,7 +9,7 @@ import UIKit
 import FirebaseAuth
 import FirebaseFirestore
 
-class ProfileDetailsViewController: UIViewController {
+class ProfileDetailsViewController: KeyboardHandlingViewController {
 
     @IBOutlet weak var aboutMeTextView: UITextView!
     
@@ -19,9 +19,64 @@ class ProfileDetailsViewController: UIViewController {
     
     @IBOutlet weak var residencyCountryTextField: UITextField!
     
+    @IBOutlet weak var bottomConstraint: NSLayoutConstraint?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupStyle()
+        
+        aboutMeTextView.addDoneButtonOnKeyboard()
+        AddNationalityTextField.addDoneButtonOnKeyboard()
+        spokenLanguagesTextField.addDoneButtonOnKeyboard()
+        residencyCountryTextField.addDoneButtonOnKeyboard()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(keyboardWillShow),
+            name: UIResponder.keyboardWillShowNotification,
+            object: nil
+        )
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(keyboardWillHide),
+            name: UIResponder.keyboardWillHideNotification,
+            object: nil
+        )
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        
+        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
+    }
+    
+    @objc
+    private func keyboardWillShow(notification: Notification) {
+        guard let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else { return }
+        bottomConstraint?.constant += keyboardFrame.height
+        
+        let residencyCountryTextFieldMaxY = residencyCountryTextField.frame.maxY
+        if residencyCountryTextFieldMaxY > keyboardFrame.origin.y {
+            let diff = residencyCountryTextFieldMaxY - keyboardFrame.origin.y
+            print(diff)
+            bottomConstraint?.constant = diff + 30 + 20
+            UIView.animate(withDuration: 0.2) {
+                self.view.layoutIfNeeded()
+            }
+        }
+    }
+    
+    @objc func keyboardWillHide(notification: Notification) {
+        bottomConstraint?.constant = 30
+        UIView.animate(withDuration: 0.2) {
+            self.view.layoutIfNeeded()
+        }
     }
     
     func emptyFields() {
@@ -73,6 +128,13 @@ class ProfileDetailsViewController: UIViewController {
         residencyCountryTextField.layer.borderWidth = 1
     }
     
+    func showDetailsPostingFeedback() {
+        let alert = UIAlertController(title: "As alterações não foram salvas", message: "Os campos precisam estar preenchidos para atualizar o perfil", preferredStyle: .alert)
+        
+        alert.addAction(UIAlertAction(title: "Okay", style: .default, handler: nil))
+        present(alert, animated: true, completion: nil)
+    }
+    
     @IBAction func cancelOperationButtonPressed(_ sender: Any) {
         self.dismiss(animated: true,completion: nil)
     }
@@ -99,7 +161,7 @@ class ProfileDetailsViewController: UIViewController {
         let userDocument = db.collection("userDetails").document(userId)
         
         if aboutMe.isEmpty || userNationality.isEmpty || spokenLanguages.isEmpty || residencyCountry.isEmpty {
-            self.dismiss(animated: true, completion: nil)
+            self.showDetailsPostingFeedback()
             print("Campos vazios o conteúdo não será atualizado")
         } else {
             userDocument.setData(userDetails, merge: false) { error in

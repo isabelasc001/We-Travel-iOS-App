@@ -6,9 +6,11 @@
 //
 
 import UIKit
+import FirebaseFirestore
+import FirebaseAuth
 
 class ChatTableViewCell: UITableViewCell {
-
+    
     @IBOutlet weak var userPhotoImageView: UIImageView!
     
     @IBOutlet weak var userNameLabel: UILabel!
@@ -21,7 +23,7 @@ class ChatTableViewCell: UITableViewCell {
         super.awakeFromNib()
         setupCellAppearance()
     }
-
+    
     func setupCellAppearance() {
         userPhotoImageView.layer.cornerRadius = userPhotoImageView.frame.height/2
         userPhotoImageView.clipsToBounds = true
@@ -32,17 +34,23 @@ class ChatTableViewCell: UITableViewCell {
     
     func configureCell(chat: Chat) {
         userNameLabel.text = chat.username
-        lastMessageContentTextView.text = chat.lastMessage.isEmpty ? "No messages yet" : chat.lastMessage
-        unreadMessagesImageView.isHidden = !chat.hasUnreadMessages
-        if let url = URL(string: chat.photoURL) {
-                loadProfileImage(from: url)
-            }
+        lastMessageContentTextView.text = chat.lastMessage.isEmpty ? "Conversa vazia" : chat.lastMessage
+        if let url = URL(string: chat.userPhotoURL) {
+            URLSession.shared.dataTask(with: url) { data, _, _ in
+                if let data = data {
+                    DispatchQueue.main.async {
+                        self.userPhotoImageView.image = UIImage(data: data)
+                    }
+                }
+            }.resume()
+        } else {
+            userPhotoImageView.image = UIImage(named: "defaultUserPhoto")
+        }
     }
     
     override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
-
-        // Configure the view for the selected state
+        
     }
     
     func loadProfileImage(from url: URL) {
@@ -54,4 +62,16 @@ class ChatTableViewCell: UITableViewCell {
             }
         }
     }
+    
 }
+
+//        userNameLabel.text = chat.username
+//        lastMessageContentTextView.text = chat.lastMessage.isEmpty ? "Conversa vazia" : chat.lastMessage
+//        if chat.hasUnreadMessages {
+//            unreadMessagesImageView.isHidden =  false
+//        } else {
+//            unreadMessagesImageView.isHidden = true
+//        }
+//        if let url = URL(string: chat.photoURL) {
+//                loadProfileImage(from: url)
+//            }

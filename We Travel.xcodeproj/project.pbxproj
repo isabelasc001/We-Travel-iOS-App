@@ -41,6 +41,7 @@
 		8C9467DF2CE23B02008B835A /* ChatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C9467DE2CE23B02008B835A /* ChatViewController.swift */; };
 		8C986D312C91E55A009E5192 /* CardsContentTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C986D2F2C91E55A009E5192 /* CardsContentTableViewCell.swift */; };
 		8C986D322C91E55A009E5192 /* CardsContentTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 8C986D302C91E55A009E5192 /* CardsContentTableViewCell.xib */; };
+		8CD8FE3C2D038FC800377712 /* KeyboardHandlingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CD8FE3B2D038FC800377712 /* KeyboardHandlingViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -72,6 +73,7 @@
 		8C9467DE2CE23B02008B835A /* ChatViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatViewController.swift; sourceTree = "<group>"; };
 		8C986D2F2C91E55A009E5192 /* CardsContentTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardsContentTableViewCell.swift; sourceTree = "<group>"; };
 		8C986D302C91E55A009E5192 /* CardsContentTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = CardsContentTableViewCell.xib; sourceTree = "<group>"; };
+		8CD8FE3B2D038FC800377712 /* KeyboardHandlingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardHandlingViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -181,6 +183,7 @@
 			children = (
 				8C8B70842C7E887E00369B47 /* AppDelegate.swift */,
 				8C8B70862C7E887E00369B47 /* SceneDelegate.swift */,
+				8CD8FE3B2D038FC800377712 /* KeyboardHandlingViewController.swift */,
 				8C0F00FB2C9087240017C99E /* Database */,
 				8C4D29002C812DD6004951DC /* Login */,
 				8CEB1FFF2C93C78D00F65E9A /* Popup  */,
@@ -308,6 +311,7 @@
 				8C0F00FF2C908A7F0017C99E /* DatabaseViewController.swift in Sources */,
 				8C6ECC942C87E9DD00D82AF0 /* HomeViewController.swift in Sources */,
 				8C4D29062C813130004951DC /* LoginViewController.swift in Sources */,
+				8CD8FE3C2D038FC800377712 /* KeyboardHandlingViewController.swift in Sources */,
 				8C7B8F6D2C89EB7000192474 /* ConfigurationsViewController.swift in Sources */,
 				8C1BD4BB2CB80D3200BBD67A /* ProfileDetailsViewController.swift in Sources */,
 				8C7B8F712C89EBDF00192474 /* NewPostViewController.swift in Sources */,
